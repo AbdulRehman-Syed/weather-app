@@ -53,5 +53,8 @@ weather-app/
 ├── .gitignore
 └── README.md
 ```
+## License
+
+This project is open source and available under the MIT License.
 
 **Note:** Files listed in `.gitignore` (such as `config.js`) will not be uploaded to GitHub.
