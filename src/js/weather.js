@@ -1,28 +1,13 @@
-import CONFIG from './config';
-
 class WeatherService {
     constructor() {
-        this.API_KEY = 'CONFIG.API_KEY';
+        this.API_KEY = 'aa652eca8dd68809cbb320a05f80d13f';
         this.BASE_URL = 'https://api.openweathermap.org/data/2.5';
-        
-        this.weatherIcons = {
-            '01d': '☀️', '01n': '🌙',
-            '02d': '⛅', '02n': '☁️',
-            '03d': '☁️', '03n': '☁️',
-            '04d': '☁️', '04n': '☁️',
-            '09d': '🌧️', '09n': '🌧️',
-            '10d': '🌦️', '10n': '🌧️',
-            '11d': '⛈️', '11n': '⛈️',
-            '13d': '❄️', '13n': '❄️',
-            '50d': '🌫️', '50n': '🌫️'
-        };
     }
 
     async getCurrentWeather(city) {
         try {
-            const response = await fetch(
-                `${this.BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${this.API_KEY}&units=metric`
-            );
+            const url = `${this.BASE_URL}/weather?q=${city}&appid=${this.API_KEY}&units=metric`;
+            const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -38,9 +23,8 @@ class WeatherService {
 
     async getCurrentWeatherByCoords(lat, lon) {
         try {
-            const response = await fetch(
-                `${this.BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${this.API_KEY}&units=metric`
-            );
+            const url = `${this.BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${this.API_KEY}&units=metric`;
+            const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -50,15 +34,14 @@ class WeatherService {
             const data = await response.json();
             return this.processWeatherData(data);
         } catch (error) {
-            throw new Error(`Failed to fetch weather  ${error.message}`);
+            throw new Error(`Failed to fetch weather data: ${error.message}`);
         }
     }
 
     async getForecast(city) {
         try {
-            const response = await fetch(
-                `${this.BASE_URL}/forecast?q=${encodeURIComponent(city)}&appid=${this.API_KEY}&units=metric`
-            );
+            const url = `${this.BASE_URL}/forecast?q=${city}&appid=${this.API_KEY}&units=metric`;
+            const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -79,8 +62,8 @@ class WeatherService {
             temperature: Math.round(data.main.temp),
             feelsLike: Math.round(data.main.feels_like),
             humidity: data.main.humidity,
-            windSpeed: data.wind.speed,
             description: data.weather[0].description,
+            windSpeed: data.wind.speed,
             icon: this.getWeatherIcon(data.weather[0].icon),
             timestamp: new Date(data.dt * 1000)
         };
@@ -115,7 +98,18 @@ class WeatherService {
     }
 
     getWeatherIcon(iconCode) {
-        return this.weatherIcons[iconCode] || '🌤️';
+        const icons = {
+            '01d': '☀️', '01n': '🌙',
+            '02d': '⛅', '02n': '☁️',
+            '03d': '☁️', '03n': '☁️',
+            '04d': '☁️', '04n': '☁️',
+            '09d': '🌧️', '09n': '🌧️',
+            '10d': '🌦️', '10n': '🌧️',
+            '11d': '⛈️', '11n': '⛈️',
+            '13d': '❄️', '13n': '❄️',
+            '50d': '🌫️', '50n': '🌫️'
+        };
+        return icons[iconCode] || '🌤️';
     }
 
     getCurrentLocation() {
@@ -136,23 +130,20 @@ class WeatherService {
                     let errorMessage = 'Unable to get your location';
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
-                            errorMessage = 'Location access denied. Please enable location services and try again.';
+                            errorMessage = 'Location access denied. Please enable location services.';
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            errorMessage = 'Location information is unavailable. Please check your device settings.';
+                            errorMessage = 'Location information is unavailable.';
                             break;
                         case error.TIMEOUT:
-                            errorMessage = 'The request to get your location timed out. Please try again.';
+                            errorMessage = 'The request to get user location timed out.';
                             break;
-                        default:
-                            errorMessage = `Location error: ${error.message}`;
                     }
                     reject(new Error(errorMessage));
                 },
                 {
-                    timeout: 15000,
-                    enableHighAccuracy: false,
-                    maximumAge: 300000
+                    timeout: 10000,
+                    enableHighAccuracy: true
                 }
             );
         });
