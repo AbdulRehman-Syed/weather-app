@@ -1,5 +1,11 @@
-
-import CONFIG from './config';
+let CONFIG;
+try {
+    CONFIG = await import('./config.js');
+    console.log('✅ User config loaded');
+} catch (error) {
+    console.log('⚠️ No user config found, using demo mode');
+    CONFIG = { default: { API_KEY: null } };
+}
 
 class WeatherService {
     constructor() {
