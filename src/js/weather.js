@@ -1,19 +1,6 @@
-let CONFIG;
-try {
-    CONFIG = await import('./config.js');
-    console.log('✅ User config loaded');
-} catch (error) {
-    console.log('⚠️ No user config found, using demo mode');
-    CONFIG = { default: { API_KEY: null } };
-}
-
 class WeatherService {
     constructor() {
-        this.DEMO_API_KEY = 'aa652eca8dd68809cbb320a05f80d13f'; 
-        this.USER_API_KEY = CONFIG?.API_KEY;
-        
-        this.API_KEY = this.USER_API_KEY || this.DEMO_API_KEY;
-        
+        this.API_KEY = 'aa652eca8dd68809cbb320a05f80d13f';
         this.BASE_URL = 'https://api.openweathermap.org/data/2.5';
         
         this.weatherIcons = {
@@ -27,121 +14,59 @@ class WeatherService {
             '13d': '❄️', '13n': '❄️',
             '50d': '🌫️', '50n': '🌫️'
         };
-        
-        this.logApiKeyUsage();
     }
-    
-    logApiKeyUsage() {
-        if (this.USER_API_KEY) {
-            console.log('✅ Using user API key');
-        } else {
-            console.log('⚠️ Using demo API key - for full functionality, add your own API key');
-        }
-    }
-    
-    validateApiKey() {
-        if (!this.API_KEY) {
-            throw new Error('No API key configured. Please set up your OpenWeatherMap API key.');
-        }
-        
-        if (this.API_KEY === this.DEMO_API_KEY) {
-            console.warn('ℹ️ Using demo API key (1,000 calls/day limit). For unlimited usage, add your own API key.');
-        }
-    }
-    
+
     async getCurrentWeather(city) {
         try {
-            this.validateApiKey();
-            
             const url = `${this.BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${this.API_KEY}&units=metric`;
-            console.log('Fetching current weather:', url);
-            
             const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                let errorMessage = errorData.message || `Weather data not found for ${city}`;
-                
-                if (response.status === 401) {
-                    errorMessage = 'Invalid API key. Please check your OpenWeatherMap API key.';
-                } else if (response.status === 429) {
-                    errorMessage = 'API rate limit exceeded. Please try again later or use your own API key.';
-                }
-                
-                throw new Error(errorMessage);
+                throw new Error(errorData.message || `Weather data not found for ${city}`);
             }
             
             const data = await response.json();
-            console.log('Current weather data received:', data);
             return this.processWeatherData(data);
         } catch (error) {
-            console.error('Current weather fetch error:', error);
             throw new Error(`Failed to fetch weather data: ${error.message}`);
         }
     }
-    
+
     async getCurrentWeatherByCoords(lat, lon) {
         try {
-            this.validateApiKey();
-            
             const url = `${this.BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${this.API_KEY}&units=metric`;
-            console.log('Fetching weather by coordinates:', url);
-            
             const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                let errorMessage = errorData.message || 'Unable to fetch weather data for your location';
-                
-                if (response.status === 401) {
-                    errorMessage = 'Invalid API key. Please check your OpenWeatherMap API key.';
-                } else if (response.status === 429) {
-                    errorMessage = 'API rate limit exceeded. Please try again later or use your own API key.';
-                }
-                
-                throw new Error(errorMessage);
+                throw new Error(errorData.message || 'Unable to fetch weather data for your location');
             }
             
             const data = await response.json();
-            console.log('Weather by coordinates data received:', data);
             return this.processWeatherData(data);
         } catch (error) {
-            console.error('Weather by coordinates fetch error:', error);
             throw new Error(`Failed to fetch weather data: ${error.message}`);
         }
     }
-    
+
     async getForecast(city) {
         try {
-            this.validateApiKey();
-            
-            const url = `${this.BASE_URL}/forecast?q=${encodeURIComponent(city)}&appid=${this.API_KEY}&units=metric`;
-            console.log('Fetching forecast:', url);
-            
+            const url = `${this.BASE_URL}/forecast?q=${city}&appid=${this.API_KEY}&units=metric`;
             const response = await fetch(url);
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                let errorMessage = errorData.message || 'Forecast data not available';
-                
-                if (response.status === 401) {
-                    errorMessage = 'Invalid API key. Please check your OpenWeatherMap API key.';
-                } else if (response.status === 429) {
-                    errorMessage = 'API rate limit exceeded. Please try again later or use your own API key.';
-                }
-                
-                throw new Error(errorMessage);
+                throw new Error(errorData.message || 'Forecast data not available');
             }
             
             const data = await response.json();
-            console.log('Forecast data received:', data);
             return this.processForecastData(data);
         } catch (error) {
-            console.error('Forecast fetch error:', error);
             throw new Error(`Failed to fetch forecast data: ${error.message}`);
         }
     }
-    
+
     processWeatherData(data) {
         return {
             city: data.name,
@@ -155,7 +80,7 @@ class WeatherService {
             timestamp: new Date(data.dt * 1000)
         };
     }
-    
+
     processForecastData(data) {
         const dailyForecasts = {};
         
@@ -183,11 +108,11 @@ class WeatherService {
 
         return Object.values(dailyForecasts).slice(0, 5);
     }
-    
+
     getWeatherIcon(iconCode) {
         return this.weatherIcons[iconCode] || '🌤️';
     }
-    
+
     getCurrentLocation() {
         return new Promise((resolve, reject) => {
             if (!navigator.geolocation) {
@@ -195,18 +120,14 @@ class WeatherService {
                 return;
             }
 
-            console.log('Requesting user location...');
-            
             navigator.geolocation.getCurrentPosition(
                 position => {
-                    console.log('Location received:', position.coords);
                     resolve({
                         lat: position.coords.latitude,
                         lon: position.coords.longitude
                     });
                 },
                 error => {
-                    console.error('Geolocation error:', error);
                     let errorMessage = 'Unable to get your location';
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
@@ -228,20 +149,6 @@ class WeatherService {
                 }
             );
         });
-    }
-    
-    isUsingDemoKey() {
-        return this.API_KEY === this.DEMO_API_KEY;
-    }
-    
-    getApiKeyStatus() {
-        if (this.USER_API_KEY) {
-            return 'user'; 
-        } else if (this.DEMO_API_KEY) {
-            return 'demo';
-        } else {
-            return 'none';
-        }
     }
 }
 

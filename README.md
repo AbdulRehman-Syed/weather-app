@@ -13,30 +13,21 @@ A clean, responsive weather app that delivers real-time conditions and a 5-day f
 - JavaScript ES6+ modules
 - OpenWeatherMap API
 
-## Quick Start
-```bash
-git clone https://github.com/yourusername/weather-app.git
-```
-Get a free API key from [OpenWeatherMap](https://openweathermap.org/api) and create:
-```
-src/js/config.js
-```
-with:
-```javascript
-const CONFIG = {
-    API_KEY: 'your-real-api-key-here'
-};
-export default CONFIG;
-```
+## API Key Information
+This app uses a built-in demo API key for immediate functionality. No configuration needed - works out of the box!
 
-Run locally:
-```bash
-python -m http.server 8000
-```
-Or use VS Code Live Server, then open:
-```
-http://localhost:8000
-```
+For unlimited usage, you can replace the demo API key in `src/js/weather.js` with your own OpenWeatherMap API key.
+
+## Setup
+1. Simply open `index.html` in a browser
+2. Or serve with any local server
+3. No API key setup required
+
+## Usage
+1. Enter a city name in the search box
+2. Click the search button or press Enter
+3. View current weather and 5-day forecast
+4. Click the location icon (📍) for current location weather
 
 ## Project Structure
 ```
